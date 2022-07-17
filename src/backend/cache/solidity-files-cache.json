@@ -405,8 +405,8 @@
       ]
     },
     "/home/system11/Documents/Test-Projects/Web3.0/nft_marketplace/src/backend/contracts/Marketplace.sol": {
-      "lastModificationDate": 1657834335982,
-      "contentHash": "f3b198974f75f1123db953d5ca1d4e6b",
+      "lastModificationDate": 1658077045633,
+      "contentHash": "b263acba999c4412edcbf883bae5aeaf",
       "sourceName": "src/backend/contracts/Marketplace.sol",
       "solcConfig": {
         "version": "0.8.4",
