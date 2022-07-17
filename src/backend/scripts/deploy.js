@@ -8,10 +8,17 @@ async function main() {
 
   // Get the ContractFactories and Signers here.
   const NFT = await ethers.getContractFactory("NFT");
+  const Marketplace = await ethers.getContractFactory("Marketplace");
 
   //deploy contract
   const nft = await NFT.deploy();
+  const marketplace = await Marketplace.deploy(1);
+
+  console.log("NFT contract adddress: ", nft.address);
+  console.log("Marketplace contract address : ", marketplace.address);
+
   saveToFronted(nft, "NFT");
+  saveToFronted(marketplace, "Marketplace")
 }
 
 const saveToFronted = (contract, name) => {
