@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
+import { create as ipfsHttpClient } from "ipfs-http-client";
+
 import { marketplaceABI, marketplaceAddress, nftABI, nftAddress } from "../utils/constants";
 
 export const TransactionContext = React.createContext();
+
+const client = ipfsHttpClient("https://ipfs.infura.io:5001/api/v0")
 
 const { ethereum } = window;
 
@@ -28,6 +32,12 @@ const getEthereumContract = () => {
 export const TransactionProvider = ({ children }) => {
   const [connectedAccount, setConnectedAccount] = useState(initialState);
   const [marketplaceItems, setMarketplaceItems] = useState([]);
+  const [nftObj, setNftObj] = useState({
+    name: "",
+    image: null,
+    price: 0,
+    description: ""
+  })
   const [isLoading, setIsLoading] = useState(false);
 
   const checkIfWalletIsConnected = async () => {
@@ -60,9 +70,11 @@ export const TransactionProvider = ({ children }) => {
     const { marketplace, nft } = await getEthereumContract();
 
     const itemCount = await marketplace.itemCount();
+    console.log(itemCount, '------------itemCount')
     const items = [];
     for (let i = 0; i < itemCount; i++) {
       const item = await marketplace.items(i);
+      console.log(item, '--------item')
       if (!item.sold) {
         //get url from nft contract
         const uri = await nft.tokenURI(item.tokenId)
@@ -92,6 +104,59 @@ export const TransactionProvider = ({ children }) => {
     loadMarketplaceItems();
   }
 
+  const uploadToNft = async (e) => {
+    e.preventDefault();
+    const file = e.target.files[0];
+
+    if (typeof file !== 'undefined') {
+      try {
+        const result = await client.add(file)
+        console.log(result, '-----------result');
+        setNftObj({
+          ...nftObj,
+          image: `https:/ipfs.infura.io/ipfs/${result.path}`
+        })
+      } catch (error) {
+        throw new Error(`uploadToNft-------${error}`)
+      }
+    }
+  }
+
+  const createNft = async () => {
+    try {
+      const result = await client.add(JSON.stringify({ image: nftObj.image, name: nftObj.name, description: nftObj.description }))
+      mintNFT(result);
+    } catch (error) {
+      throw new Error(`createNft-------------${error}`)
+    }
+  }
+
+  const mintNFT = async (result) => {
+
+    const { nft, marketplace } = await getEthereumContract();
+
+    const uri = `https//ipfs.infura.io/ipfs/${result.path}`;
+
+    //mint nft
+    await (await nft.mint(uri)).wait();
+    //get tokenId of new  nft
+    const id = await nft.tokenCount();
+    //approve marketplace to spend nft
+    await (await nft.setApprovalForAll(marketplace.address, true)).wait();
+
+    //add nft to marketplace
+    const listingPrice = ethers.utils.parseEther(nftObj.price.toString())
+    await (await marketplace.makeItem(nft.address, id, listingPrice)).wait();
+  }
+
+  const handleNftObj = (e) => {
+    const { name, value } = e.target;
+    setNftObj({
+      ...nftObj,
+      [name]: value
+    })
+  }
+
   useEffect(() => {
     checkIfWalletIsConnected();
     loadMarketplaceItems();
@@ -99,7 +164,7 @@ export const TransactionProvider = ({ children }) => {
 
   return (
     <>
-      <TransactionContext.Provider value={{ connectedAccount, isLoading, connectWallet, marketplaceItems, buyMarketItem }}>
+      <TransactionContext.Provider value={{ connectedAccount, isLoading, connectWallet, marketplaceItems, buyMarketItem, createNft, uploadToNft, handleNftObj }}>
         {children}
       </TransactionContext.Provider>
     </>

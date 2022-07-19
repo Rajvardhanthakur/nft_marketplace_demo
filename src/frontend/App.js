@@ -7,6 +7,7 @@ import './App.css';
 import { TransactionContext } from "./context/TransactionContext";
 import Navigation from "./components/Navbar";
 import Home from "./containers/Home";
+import Create from "./containers/CreatePage";
 
 const App = () => {
   const { isLoading } = useContext(TransactionContext);
@@ -26,6 +27,7 @@ const App = () => {
 
               <Routes>
                 <Route path="/" element={<Home />} />
+                <Route path="/create" element={<Create />} />
               </Routes>
             )
           }
