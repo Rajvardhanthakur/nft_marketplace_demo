@@ -91,7 +91,7 @@ describe("NFTMarketplace", function () {
     it("Should fail if price is set to zero", async function () {
       await expect(
         marketplace.connect(addr1).makeItem(nft.address, 1, 0)
-      ).to.be.revertedWith("Price  must be greater then zero")
+      ).to.be.revertedWith("Price must be greater than zero")
     })
   });
 
@@ -138,11 +138,11 @@ describe("NFTMarketplace", function () {
     it("Should fail for invalid item ids, sold items and when not enough ether is paid", async function () {
 
       // fails for invalid item ids
-      await expect(marketplace.connect(addr2).purchaseItem(2, { value: totalPriceInWei })).to.be.revertedWith("Item dosen't exist")
-      await expect(marketplace.connect(addr2).purchaseItem(0, { value: totalPriceInWei })).to.be.revertedWith("Item dosen't exist")
+      await expect(marketplace.connect(addr2).purchaseItem(2, { value: totalPriceInWei })).to.be.revertedWith("item doesn't exist")
+      await expect(marketplace.connect(addr2).purchaseItem(0, { value: totalPriceInWei })).to.be.revertedWith("item doesn't exist")
 
       //fails when not enough ether is paid with the transaction.
-      await expect(marketplace.connect(addr2).purchaseItem(1, { value: toWei(price) })).to.be.revertedWith("Not enough ether to cover item price and market fee")
+      await expect(marketplace.connect(addr2).purchaseItem(1, { value: toWei(price) })).to.be.revertedWith("not enough ether to cover item price and market fee")
 
       //addr2 purchase item 1
       await marketplace.connect(addr2).purchaseItem(1, { value: totalPriceInWei })
@@ -150,7 +150,7 @@ describe("NFTMarketplace", function () {
       // deployer tries purchasing item 1 after its been sold
       await expect(
         marketplace.connect(addr2).purchaseItem(1, { value: totalPriceInWei })
-      ).to.be.revertedWith("Item dosen't exist")
+      ).to.be.revertedWith("item already sold")
     });
   })
 })
